@@ -1,5 +1,7 @@
 import random
 
+Vec2 = tuple[int, int]
+
 class Salesman:
     """
     NearestNeighbor() - Starts at a point and keeps adding the nearest neighbor to the path until it makes a loop
@@ -13,9 +15,10 @@ class Salesman:
 
     [AntColony]
     iterations: number of times to simulate the ants (more is better but there is a falloff)
-    """
 
-    Vec2 = tuple[int, int]
+    [TwoOptOptimization - ThreeOptOptimization]
+    defaultPoints: if the path was modified then the points wont be in the default order, the default order is needed
+    """
 
     @staticmethod
     def NearestNeighbor(points: list[Vec2], distances: list[list[int]]) -> tuple[list[Vec2], float]:
