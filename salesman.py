@@ -138,14 +138,14 @@ class Salesman:
 
         def GenConvexHull(points: list[Vec2]) -> list[Vec2]:
             def orientation(a: Vec2, b: Vec2, c: Vec2) -> int:
-                val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y)
+                val = (b[1] - a[1]) * (c[0] - b[0]) - (b[0] - a[0]) * (c[1] - b[1])
                 if val == 0: return 0   # collinear
                 elif val > 0: return 1  # clockwise
                 else: return 2          # counterclockwise
 
             def angle(p1: Vec2, p2: Vec2):
-                x_rel = p2.x - p1.x
-                y_rel = p2.y - p1.y
+                x_rel = p2[0] - p1[0]
+                y_rel = p2[1] - p1[1]
 
                 angle = math.atan2(y_rel, x_rel)
                 if x_rel > 0 and y_rel > 0: # Quadrant I, angle already correct
@@ -162,7 +162,7 @@ class Salesman:
 
                 return angle
 
-            minPoint = min(points, key=lambda p: p.y)
+            minPoint = min(points, key=lambda p: p[1])
             points = sorted(points, key=lambda p: angle(minPoint, p))
 
             stack: deque[Vec2] = deque()
