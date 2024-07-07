@@ -131,6 +131,89 @@ class Salesman:
         return (best_path, best_length)
 
     @staticmethod
+    def ConvexHull(points: list[Vec2], distances: list[list[int]]) -> tuple[list[Vec2], float]:
+        point_to_index = {p:i for i, p in enumerate(points)}
+
+        points = points.copy()
+
+        def GenConvexHull(points: list[Vec2]) -> list[Vec2]:
+            def orientation(a: Vec2, b: Vec2, c: Vec2) -> int:
+                val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y)
+                if val == 0: return 0   # collinear
+                elif val > 0: return 1  # clockwise
+                else: return 2          # counterclockwise
+
+            def angle(p1: Vec2, p2: Vec2):
+                x_rel = p2.x - p1.x
+                y_rel = p2.y - p1.y
+
+                angle = math.atan2(y_rel, x_rel)
+                if x_rel > 0 and y_rel > 0: # Quadrant I, angle already correct
+                    pass
+
+                elif x_rel < 0 and y_rel > 0: # Quadrant II
+                    angle += math.pi
+
+                elif x_rel < 0 and y_rel < 0: # Quadrant III
+                    angle += math.pi
+
+                else: # Quadrant IV
+                    angle += 2 * math.pi
+
+                return angle
+
+            minPoint = min(points, key=lambda p: p.y)
+            points = sorted(points, key=lambda p: angle(minPoint, p))
+
+            stack: deque[Vec2] = deque()
+            stack.append(points[0])
+
+            for p in points:
+                if p not in stack:
+                    while (len(stack) > 1) and orientation(stack[-2], stack[-1], p) != 2:
+                        stack.pop()
+                    stack.append(p)
+
+            return list(stack) + [stack[0]]
+
+        path = GenConvexHull(points)
+
+        while len(path) < len(points):
+            bestRatio = float("inf")
+            insertIndex = 0
+            bestIndex = 0
+
+            for i in range(len(points)): # Free points
+                p1 = points[i]
+
+                if (p1 in path): continue
+
+                minCost = float("inf")
+                minIndex = 0
+
+                for j in range(len(path) - 1): # Path points
+                    p2 = path[j]
+                    next_point = path[j + 1]
+                    cost = distances[point_to_index[p2]][point_to_index[p1]] + distances[point_to_index[p1]][point_to_index[next_point]] - distances[point_to_index[p2]][point_to_index[next_point]]
+
+                    if (cost < minCost):
+                        minCost = cost
+                        minIndex = j
+
+                next_point = points[minIndex + 1]
+                ratio = distances[point_to_index[path[minIndex]]][point_to_index[next_point]] / (distances[point_to_index[path[minIndex]]][point_to_index[p1]] + distances[point_to_index[p1]][point_to_index[next_point]])
+
+                if (ratio < bestRatio):
+                    bestRatio = ratio
+                    insertIndex = minIndex + 1
+                    bestIndex = i
+
+            path.insert(insertIndex, points[bestIndex])
+
+        return (path, sum([distances[point_to_index[path[i]]][point_to_index[path[i + 1]]] for i in range(len(path) - 1)]))
+
+
+    @staticmethod
     def TwoOptOptimize(defaultPoints: list[Vec2], path: list[Vec2], current_dist: float, distances: list[list[int]]) -> tuple[list[Vec2], float]:
         point_to_index = {p:i for i, p in enumerate(defaultPoints)}
 
